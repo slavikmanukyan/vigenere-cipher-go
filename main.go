@@ -4,25 +4,47 @@ import (
 	"fmt"
 )
 
-func cipher(s string, key string) string {
+func cipher(s string, key string, encrypt bool) string {
 	result := []rune(s)
 	keyLen := len(key)
 	spaceCount := 0
 	for index, char := range result {
-		if char >= 'a' && char <= 'z' {
-			newChar := (s[index]+key[(index-spaceCount)%keyLen])%97 + 97
-			if newChar >= 97+26 {
-				newChar = newChar - 26
-			}
-			result[index] = rune(newChar)
+		newChar := byte(char)
+		m1 := byte('A')
+		m2 := byte('A')
+		if char >= 'a' {
+			m1 = byte('a')
 		}
-		if char == ' ' {
+		keyChar := key[(index-spaceCount)%keyLen]
+		if keyChar >= 'a' {
+			m2 = byte('a')
+		}
+		if (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') {
+			if encrypt {
+				newChar = (s[index]-m1+(keyChar-m2))%26 + m1
+			} else {
+				newChar = (s[index]-m1-(keyChar-m2)+26)%26 + m1
+			}
+
+			result[index] = rune(newChar)
+		} else {
 			spaceCount++
 		}
 	}
 	return string(result)
 }
 
+func encrypt(in string, key string) string {
+	return cipher(in, key, true)
+}
+
+func decrypt(in string, key string) string {
+	return cipher(in, key, false)
+}
+
 func main() {
-	fmt.Println(cipher("dasjkdhas djkasd asjkdahsd ajksd asdjkahsd asjkdhasd asdiasdhajksdhjasd", "xaxkj"))
+	t := encrypt("dasjkdhas djkasd asjkdahsd ajksd asdjkahsd asjkdhasd asdiasdhajksdhjasd", "xaxkj")
+	s := decrypt(t, "xaxkj")
+	fmt.Println(t)
+	fmt.Println(s)
 }
